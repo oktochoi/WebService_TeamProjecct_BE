@@ -1,5 +1,6 @@
 package hello.webservice_project_be.controller;
 
+import hello.webservice_project_be.config.OAuthConfig;
 import hello.webservice_project_be.model.User;
 import hello.webservice_project_be.dao.UserDAO;
 import org.json.JSONObject;
@@ -33,10 +34,11 @@ public class GitHubAuthController {
     // ⚠️ 중요: GitHub에서 OAuth App을 생성하고 아래 값들을 설정해야 합니다!
     // 설정 방법: GITHUB_OAUTH_QUICK_SETUP.md 파일 참고
     // https://github.com/settings/developers 에서 OAuth App 생성
-    private static final String GITHUB_CLIENT_ID = "Ov23lieOAWQRxryvvmaG"; // GitHub OAuth App Client ID
-    private static final String GITHUB_CLIENT_SECRET = "e26f9d26385d2c46bc5ccb45fbb5de5cf4a8d599"; // ⚠️ Client Secret도 생성해서 입력하세요!
-    private static final String GITHUB_REDIRECT_URI =
-            "http://localhost:8080/WebService_Project_BE_war_exploded/github-auth/callback";
+
+    private static final String GITHUB_CLIENT_ID = OAuthConfig.CLIENT_ID;
+    private static final String GITHUB_CLIENT_SECRET = OAuthConfig.CLIENT_SECRET;
+    private static final String GITHUB_REDIRECT_URI = OAuthConfig.REDIRECT_URI;
+
     private static final String GITHUB_API_URL = "https://api.github.com/user";
     
     /**
@@ -50,7 +52,9 @@ public class GitHubAuthController {
         System.out.println("[GitHubAuthController] OAuth 시작");
         System.out.println("[GitHubAuthController] 요청 URI: " + request.getRequestURI());
         System.out.println("[GitHubAuthController] Context Path: " + request.getContextPath());
-        
+        System.out.println("REDIRECT_URI RAW = " + GITHUB_REDIRECT_URI);
+
+
         // State 생성 (CSRF 방지)
         String state = java.util.UUID.randomUUID().toString();
         session.setAttribute("oauth_state", state);

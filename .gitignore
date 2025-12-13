@@ -40,3 +40,7 @@ build/
 ### Application Properties (API Keys) ###
 application.properties
 src/main/resources/application.properties
+
+### GitHub OAuth (Personal Secrets) ###
+github-oauth.properties
+src/main/resources/github-oauth.properties
