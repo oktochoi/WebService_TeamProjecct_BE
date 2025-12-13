@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                           http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/context
+                           http://www.springframework.org/schema/context/spring-context.xsd
+                           http://www.springframework.org/schema/mvc
+                           http://www.springframework.org/schema/mvc/spring-mvc.xsd">
+    
+    <!-- Controller Component Scan -->
+    <context:component-scan base-package="hello.webservice_project_be.controller"/>
+    
+    <!-- Annotation-driven -->
+    <mvc:annotation-driven>
+        <mvc:message-converters>
+            <bean class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
+                <property name="objectMapper">
+                    <bean class="com.fasterxml.jackson.databind.ObjectMapper">
+                        <property name="propertyNamingStrategy">
+                            <bean class="com.fasterxml.jackson.databind.PropertyNamingStrategies.LowerCamelCaseStrategy"/>
+                        </property>
+                    </bean>
+                </property>
+            </bean>
+        </mvc:message-converters>
+    </mvc:annotation-driven>
+    
+    <!-- Interceptor 설정 -->
+    <mvc:interceptors>
+        <mvc:interceptor>
+            <mvc:mapping path="/dashboard.jsp"/>
+            <mvc:mapping path="/project-detail.jsp"/>
+            <mvc:mapping path="/settings.jsp"/>
+            <mvc:mapping path="/profile.jsp"/>
+            <mvc:mapping path="/api/projects/**"/>
+            <mvc:exclude-mapping path="/github-auth/**"/>
+            <mvc:exclude-mapping path="/logout"/>
+            <mvc:exclude-mapping path="/login.jsp"/>
+            <mvc:exclude-mapping path="/index.jsp"/>
+            <bean class="hello.webservice_project_be.interceptor.AuthInterceptor"/>
+        </mvc:interceptor>
+    </mvc:interceptors>
+    
+    <!-- View Resolver -->
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="prefix" value="/"/>
+        <property name="suffix" value=".jsp"/>
+        <property name="order" value="2"/>
+        <property name="viewNames" value="*.jsp"/>
+    </bean>
+    
+    <!-- Static Resources -->
+    <mvc:resources mapping="/resources/**" location="/resources/"/>
+    
+</beans>
+
