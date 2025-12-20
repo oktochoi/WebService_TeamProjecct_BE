@@ -40,5 +40,14 @@ public class ApplicationDataSource {
             }
         }
     }
-}
 
+    // 새로고침 트랜잭션 등에서 전역 커넥션에 영향 주지 않기 위해 새로운 Connection을 생성해서 반환합니다.
+    public static Connection getNewConnection() throws SQLException {
+        try {
+            Class.forName("org.mariadb.jdbc.Driver");
+        } catch (ClassNotFoundException e) {
+            throw new SQLException("MariaDB JDBC 드라이버를 찾을 수 없습니다.", e);
+        }
+        return DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+    }
+}

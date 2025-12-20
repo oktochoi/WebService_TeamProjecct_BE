@@ -118,7 +118,7 @@
                         </p>
                     </div>
                 </div>
-                <a href="logout" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-colors cursor-pointer">
+                <a href="<%= request.getContextPath() %>/logout" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-colors cursor-pointer">
                     <i class="ri-logout-box-line text-xl"></i>
                     <span>로그아웃</span>
                 </a>
@@ -138,30 +138,9 @@
                     </div>
 
                     <div class="grid grid-cols-3 gap-4">
-                        <div class="p-3 bg-[#0d1117] border border-gray-800 rounded-lg">
-                            <div class="flex items-center gap-2 mb-1">
-                                <i class="ri-folder-line text-blue-500"></i>
-                                <span class="text-xs text-gray-400">총 프로젝트</span>
-                            </div>
-                            <p class="text-xl font-bold text-white" id="totalProjects">0</p>
-                        </div>
-
-                        <div class="p-3 bg-[#0d1117] border border-gray-800 rounded-lg">
-                            <div class="flex items-center gap-2 mb-1">
-                                <i class="ri-bar-chart-line text-green-500"></i>
-                                <span class="text-xs text-gray-400">평균 기여도</span>
-                            </div>
-                            <p class="text-xl font-bold text-white" id="avgContribution">0</p>
-                        </div>
-
-                        <div class="p-3 bg-[#0d1117] border border-gray-800 rounded-lg">
-                            <div class="flex items-center gap-2 mb-1">
-                                <i class="ri-team-line text-purple-500"></i>
-                                <span class="text-xs text-gray-400">총 팀원</span>
-                            </div>
-                            <p class="text-xl font-bold text-white" id="totalMembers">0</p>
-                        </div>
-                    </div>
+                        <!-- 빠른 통계(quick stats) 제거: 관리자용 UI 단순화 요구에 따라 삭제됨 -->
+                        <div class="col-span-full text-gray-400">&nbsp;</div>
+                     </div>
                 </div>
             </nav>
 
@@ -673,6 +652,27 @@
                 mainContainer.style.display = 'flex';
             }
         }
+    </script>
+
+    <script>
+        // Show alert banner if redirected after deletion and then remove query param
+        (function(){
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.has('deleted')) {
+                    const banner = document.createElement('div');
+                    banner.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-green-600 text-white px-4 py-2 rounded shadow';
+                    banner.textContent = '사용자가 삭제되었습니다.';
+                    document.body.appendChild(banner);
+                    setTimeout(()=>{ banner.remove(); }, 3000);
+                    // remove 'deleted' param from URL without reloading
+                    urlParams.delete('deleted');
+                    const newQuery = urlParams.toString();
+                    const newUrl = window.location.pathname + (newQuery ? ('?' + newQuery) : '');
+                    window.history.replaceState({}, '', newUrl);
+                }
+            } catch(e) { console.error(e); }
+        })();
     </script>
 </body>
 </html>

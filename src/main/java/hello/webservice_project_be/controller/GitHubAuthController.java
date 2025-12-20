@@ -59,7 +59,7 @@ public class GitHubAuthController {
         String state = java.util.UUID.randomUUID().toString();
         session.setAttribute("oauth_state", state);
         System.out.println("[GitHubAuthController] OAuth State 생성: " + state);
-        
+
         // GitHub OAuth 인증 URL 생성
         String encodedRedirectUri;
         try {
@@ -96,7 +96,7 @@ public class GitHubAuthController {
         System.out.println("[GitHubAuthController] code: " + (code != null ? "있음" : "없음"));
         System.out.println("[GitHubAuthController] state: " + state);
         System.out.println("[GitHubAuthController] error: " + error);
-        
+
         try {
             // 에러 처리
             if (error != null) {
@@ -163,9 +163,23 @@ public class GitHubAuthController {
         session.setMaxInactiveInterval(30 * 60); // 30분
         
         System.out.println("[GitHubAuthController] 세션 저장 완료 - username: " + session.getAttribute("username"));
-        
+
         // DB에 사용자 없으면 생성
         persistUserIfAbsent(username, email);
+
+        // 추가 변경: 세션에 전체 User 객체(loginUser)를 저장하여 기존 코드(Controller/Interceptor)와 호환되도록 함
+        try {
+            User user = userDAO.findByUsername(username);
+            if (user != null) {
+                session.setAttribute("loginUser", user);
+                System.out.println("[GitHubAuthController] loginUser 세션에 저장 - id: " + user.getId());
+            } else {
+                System.err.println("[GitHubAuthController] loginUser를 DB에서 찾지 못함: " + username);
+            }
+        } catch (SQLException e) {
+            System.err.println("[GitHubAuthController] loginUser 세션 저장 중 DB 오류: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
     
     /**
@@ -173,7 +187,7 @@ public class GitHubAuthController {
      */
     private String getAccessToken(String code) throws Exception {
         System.out.println("[GitHubAuthController] Access Token 요청 시작 - code: " + code.substring(0, Math.min(10, code.length())) + "...");
-        
+
         String tokenUrl = "https://github.com/login/oauth/access_token";
         URL url = new URL(tokenUrl);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -197,7 +211,7 @@ public class GitHubAuthController {
             
             int responseCode = conn.getResponseCode();
             System.out.println("[GitHubAuthController] Access Token API 응답 코드: " + responseCode);
-            
+
             if (responseCode == HttpURLConnection.HTTP_OK) {
                 BufferedReader in = new BufferedReader(
                     new InputStreamReader(conn.getInputStream(), "UTF-8"));
@@ -282,7 +296,7 @@ public class GitHubAuthController {
             
             int responseCode = conn.getResponseCode();
             System.out.println("[GitHubAuthController] GitHub API 응답 코드: " + responseCode);
-            
+
             if (responseCode == HttpURLConnection.HTTP_OK) {
                 BufferedReader in = new BufferedReader(
                     new InputStreamReader(conn.getInputStream(), "UTF-8"));
@@ -306,4 +320,3 @@ public class GitHubAuthController {
         }
     }
 }
-

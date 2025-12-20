@@ -72,6 +72,15 @@
                 </div>
             </div>
 
+            <!-- 관리자 로그인 섹션 제거 및 단추로 변경 -->
+            <div class="bg-[#161b22] border border-gray-800 rounded-xl p-6 mt-4">
+                <h3 class="text-lg font-semibold text-white mb-3 text-center">관리자</h3>
+                <p class="text-xs text-gray-400 text-center mb-3">관리자 계정이 있으신가요? 관리자 전용 로그인 페이지로 이동하세요.</p>
+                <div class="text-center">
+                    <a href="${pageContext.request.contextPath}/admin/login" class="inline-block px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg">관리자로 로그인하기</a>
+                </div>
+            </div>
+
             <div class="text-center mt-6">
                 <a href="index.jsp" class="text-sm text-gray-400 hover:text-white transition-colors cursor-pointer">
                     <i class="ri-arrow-left-line"></i> 메인으로 돌아가기
@@ -85,7 +94,8 @@
         (function() {
             const urlParams = new URLSearchParams(window.location.search);
             const error = urlParams.get('error');
-            
+            const adminError = urlParams.get('admin_error');
+
             if (error) {
                 const errorMessage = document.getElementById('errorMessage');
                 const errorText = document.getElementById('errorText');
@@ -113,6 +123,11 @@
                 
                 errorText.textContent = errorMsg;
                 errorMessage.classList.remove('hidden');
+            }
+
+            if (adminError) {
+                // 관리자 오류는 폼 내부에 이미 표시되므로 아무 동작 필요 없음
+                // 필요 시 추가 동작 가능
             }
         })();
         

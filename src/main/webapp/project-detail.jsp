@@ -104,7 +104,7 @@
                         </p>
                     </div>
                 </div>
-                <a href="logout" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-colors cursor-pointer">
+                <a href="<%= request.getContextPath() %>/logout" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-colors cursor-pointer">
                     <i class="ri-logout-box-line text-xl"></i>
                     <span>로그아웃</span>
                 </a>

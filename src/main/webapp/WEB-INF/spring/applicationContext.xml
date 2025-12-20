@@ -22,7 +22,11 @@
         <property name="username" value="W25_22400742"/>
         <property name="password" value="iWie8s"/>
     </bean>
-    
+
+    <!-- DAO 빈 등록: 일부 환경에서 component-scan이 누락될 수 있어 명시적으로 등록 -->
+    <bean id="userDAO" class="hello.webservice_project_be.dao.UserDAO"/>
+    <bean id="projectDAO" class="hello.webservice_project_be.dao.ProjectDAO"/>
+
     <!-- MyBatis SqlSessionFactory -->
     <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
         <property name="dataSource" ref="dataSource"/>
