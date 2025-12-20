@@ -7,6 +7,8 @@ import javax.servlet.annotation.*;
 @WebServlet(name = "logoutServlet", value = "/logout")
 public class LogoutServlet extends HttpServlet {
     
+    private static final String LOGIN_PAGE_URL = "http://walab.handong.edu:8080/W25_22400742_1/login.jsp";
+    
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) 
             throws IOException {
@@ -16,7 +18,7 @@ public class LogoutServlet extends HttpServlet {
             session.invalidate();
         }
         
-        response.sendRedirect("login.jsp");
+        response.sendRedirect(LOGIN_PAGE_URL);
     }
     
     @Override

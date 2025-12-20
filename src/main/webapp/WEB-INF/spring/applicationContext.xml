@@ -10,6 +10,9 @@
                            http://www.springframework.org/schema/tx
                            http://www.springframework.org/schema/tx/spring-tx.xsd">
     
+    <!-- Property Placeholder -->
+    <context:property-placeholder location="classpath:application.properties" ignore-resource-not-found="true"/>
+    
     <!-- Component Scan -->
     <context:component-scan base-package="hello.webservice_project_be">
         <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>

@@ -9,6 +9,8 @@ import javax.servlet.http.HttpSession;
 
 public class AuthInterceptor implements HandlerInterceptor {
     
+    private static final String LOGIN_PAGE_URL = "http://walab.handong.edu:8080/W25_22400742_1/login.jsp";
+    
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         System.out.println("[AuthInterceptor] preHandle 시작 - URI: " + request.getRequestURI());
@@ -40,7 +42,7 @@ public class AuthInterceptor implements HandlerInterceptor {
                 } else {
                     // 일반 요청인 경우
                     System.out.println("[AuthInterceptor] 일반 요청 - 로그인 페이지로 리다이렉트");
-                    response.sendRedirect(request.getContextPath() + "/login.jsp");
+                    response.sendRedirect(LOGIN_PAGE_URL);
                 }
                 return false;
             }

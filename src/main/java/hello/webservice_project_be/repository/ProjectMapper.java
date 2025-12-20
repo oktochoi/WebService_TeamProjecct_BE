@@ -18,5 +18,7 @@ public interface ProjectMapper {
     int update(Project project);
     
     int delete(@Param("id") int id, @Param("userId") String userId);
+    
+    int deleteByUserId(@Param("userId") String userId);
 }
 

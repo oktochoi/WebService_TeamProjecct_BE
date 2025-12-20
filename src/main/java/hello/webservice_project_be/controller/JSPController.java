@@ -36,4 +36,9 @@ public class JSPController {
     public ModelAndView profile() {
         return new ModelAndView("/profile.jsp");
     }
+    
+    @GetMapping("/admin-login.jsp")
+    public ModelAndView adminLogin() {
+        return new ModelAndView("/admin-login.jsp");
+    }
 }

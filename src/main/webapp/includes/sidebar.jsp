@@ -20,15 +20,15 @@
                 <i class="ri-folder-line text-xl"></i>
                 <span>프로젝트</span>
             </a>
-            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg mb-1 transition-colors cursor-pointer text-gray-400 hover:bg-gray-800 hover:text-white">
+            <a href="coming-soon.jsp" class="flex items-center gap-3 px-4 py-3 rounded-lg mb-1 transition-colors cursor-pointer text-gray-400 hover:bg-gray-800 hover:text-white">
                 <i class="ri-team-line text-xl"></i>
                 <span>팀원 관리</span>
             </a>
-            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg mb-1 transition-colors cursor-pointer text-gray-400 hover:bg-gray-800 hover:text-white">
+            <a href="coming-soon.jsp" class="flex items-center gap-3 px-4 py-3 rounded-lg mb-1 transition-colors cursor-pointer text-gray-400 hover:bg-gray-800 hover:text-white">
                 <i class="ri-bar-chart-box-line text-xl"></i>
                 <span>통계</span>
             </a>
-            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg mb-1 transition-colors cursor-pointer text-gray-400 hover:bg-gray-800 hover:text-white">
+            <a href="coming-soon.jsp" class="flex items-center gap-3 px-4 py-3 rounded-lg mb-1 transition-colors cursor-pointer text-gray-400 hover:bg-gray-800 hover:text-white">
                 <i class="ri-star-line text-xl"></i>
                 <span>리뷰 관리</span>
             </a>

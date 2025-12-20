@@ -13,6 +13,13 @@
     <!-- Controller Component Scan -->
     <context:component-scan base-package="hello.webservice_project_be.controller"/>
     
+    <!-- MultipartResolver 설정 (파일 업로드용) -->
+    <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+        <property name="maxUploadSize" value="5242880"/> <!-- 5MB -->
+        <property name="maxInMemorySize" value="1048576"/> <!-- 1MB -->
+        <property name="defaultEncoding" value="UTF-8"/>
+    </bean>
+    
     <!-- Annotation-driven -->
     <mvc:annotation-driven>
         <mvc:message-converters>
@@ -36,7 +43,8 @@
             <mvc:mapping path="/settings.jsp"/>
             <mvc:mapping path="/profile.jsp"/>
             <mvc:mapping path="/api/projects/**"/>
-            <mvc:exclude-mapping path="/github-auth/**"/>
+            <mvc:mapping path="/api/profile/**"/>
+            <mvc:exclude-mapping path="/github/**"/>
             <mvc:exclude-mapping path="/logout"/>
             <mvc:exclude-mapping path="/login.jsp"/>
             <mvc:exclude-mapping path="/index.jsp"/>
@@ -49,7 +57,6 @@
         <property name="prefix" value="/"/>
         <property name="suffix" value=".jsp"/>
         <property name="order" value="2"/>
-        <property name="viewNames" value="*.jsp"/>
     </bean>
     
     <!-- Static Resources -->

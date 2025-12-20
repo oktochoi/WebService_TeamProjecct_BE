@@ -49,7 +49,7 @@
                 </div>
 
                 <a
-                    href="<%= request.getContextPath() %>/github-auth/oauth"
+                    href="<%= request.getContextPath() %>/github/oauth"
                     id="loginButton"
                     onclick="checkOAuthConfig(event)"
                     class="w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-2 font-medium"
@@ -72,10 +72,16 @@
                 </div>
             </div>
 
-            <div class="text-center mt-6">
-                <a href="index.jsp" class="text-sm text-gray-400 hover:text-white transition-colors cursor-pointer">
-                    <i class="ri-arrow-left-line"></i> 메인으로 돌아가기
+            <div class="text-center mt-6 space-y-2">
+                <a href="admin-login.jsp" class="text-sm text-red-400 hover:text-red-300 transition-colors cursor-pointer flex items-center justify-center gap-1">
+                    <i class="ri-shield-user-line"></i>
+                    관리자 로그인
                 </a>
+                <div class="border-t border-gray-800 pt-4">
+                    <a href="index.jsp" class="text-sm text-gray-400 hover:text-white transition-colors cursor-pointer">
+                        <i class="ri-arrow-left-line"></i> 메인으로 돌아가기
+                    </a>
+                </div>
             </div>
         </div>
     </div>

@@ -76,12 +76,48 @@
                                 <h2 class="text-lg font-semibold text-white mb-6">프로필 정보</h2>
                                 <div class="space-y-6">
                                     <div class="flex items-center gap-4">
-                                        <div class="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-2xl font-semibold">
-                                            OK
+                                        <div class="relative">
+                                            <img 
+                                                id="profileImage" 
+                                                src="" 
+                                                alt="프로필 사진" 
+                                                class="w-20 h-20 rounded-full object-cover border-2 border-gray-700 hidden"
+                                                onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                                            />
+                                            <div id="profileImagePlaceholder" class="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-2xl font-semibold">
+                                                <% 
+                                                    if (session != null && session.getAttribute("name") != null) {
+                                                        String name = (String) session.getAttribute("name");
+                                                        if (name != null && !name.isEmpty()) {
+                                                            out.print(name.substring(0, 1).toUpperCase());
+                                                        } else {
+                                                            out.print("U");
+                                                        }
+                                                    } else {
+                                                        out.print("U");
+                                                    }
+                                                %>
+                                            </div>
                                         </div>
-                                        <button class="px-4 py-2 text-gray-300 border border-gray-700 rounded-lg hover:bg-gray-800 transition-colors whitespace-nowrap cursor-pointer">
-                                            사진 변경
-                                        </button>
+                                        <div class="flex flex-col gap-2">
+                                            <label for="imageUpload" class="px-4 py-2 text-gray-300 border border-gray-700 rounded-lg hover:bg-gray-800 transition-colors whitespace-nowrap cursor-pointer text-center">
+                                                <i class="ri-image-add-line"></i> 사진 변경
+                                            </label>
+                                            <input 
+                                                type="file" 
+                                                id="imageUpload" 
+                                                accept="image/*" 
+                                                class="hidden" 
+                                                onchange="handleImageUpload(event)"
+                                            />
+                                            <button 
+                                                onclick="removeProfileImage()" 
+                                                id="removeImageBtn"
+                                                class="px-4 py-2 text-red-400 border border-red-700 rounded-lg hover:bg-red-900/20 transition-colors whitespace-nowrap cursor-pointer text-sm hidden"
+                                            >
+                                                <i class="ri-delete-bin-line"></i> 사진 제거
+                                            </button>
+                                        </div>
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-gray-300 mb-2">
@@ -447,6 +483,135 @@
             tabBtn.classList.remove('border-transparent', 'text-gray-400');
             currentProfileSubTab = tab;
         }
+
+        // 프로필 사진 업로드
+        async function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // 파일 크기 검증 (5MB 제한)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('파일 크기는 5MB 이하여야 합니다.');
+                return;
+            }
+
+            // 이미지 파일인지 확인
+            if (!file.type.startsWith('image/')) {
+                alert('이미지 파일만 업로드할 수 있습니다.');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('image', file);
+
+            try {
+                const response = await fetch('<%= request.getContextPath() %>/api/profile/upload-image', {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'same-origin'
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || '이미지 업로드에 실패했습니다.');
+                }
+
+                const result = await response.json();
+                
+                // 이미지 표시
+                const profileImage = document.getElementById('profileImage');
+                const placeholder = document.getElementById('profileImagePlaceholder');
+                const removeBtn = document.getElementById('removeImageBtn');
+                
+                if (result.imageUrl) {
+                    profileImage.src = result.imageUrl;
+                    profileImage.style.display = 'block';
+                    placeholder.style.display = 'none';
+                    removeBtn.classList.remove('hidden');
+                }
+
+                // 성공 메시지
+                const successMsg = document.createElement('div');
+                successMsg.className = 'fixed top-4 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+                successMsg.innerHTML = '<i class="ri-check-line"></i> 프로필 사진이 업로드되었습니다.';
+                document.body.appendChild(successMsg);
+                
+                setTimeout(() => {
+                    successMsg.remove();
+                }, 3000);
+            } catch (error) {
+                console.error('이미지 업로드 오류:', error);
+                alert('이미지 업로드 중 오류가 발생했습니다: ' + error.message);
+            }
+        }
+
+        // 프로필 사진 제거
+        async function removeProfileImage() {
+            if (!confirm('프로필 사진을 제거하시겠습니까?')) return;
+
+            try {
+                const response = await fetch('<%= request.getContextPath() %>/api/profile/remove-image', {
+                    method: 'POST',
+                    credentials: 'same-origin'
+                });
+
+                if (!response.ok) {
+                    throw new Error('이미지 제거에 실패했습니다.');
+                }
+
+                // 이미지 숨기기
+                const profileImage = document.getElementById('profileImage');
+                const placeholder = document.getElementById('profileImagePlaceholder');
+                const removeBtn = document.getElementById('removeImageBtn');
+                
+                profileImage.style.display = 'none';
+                placeholder.style.display = 'flex';
+                removeBtn.classList.add('hidden');
+
+                // 성공 메시지
+                const successMsg = document.createElement('div');
+                successMsg.className = 'fixed top-4 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+                successMsg.innerHTML = '<i class="ri-check-line"></i> 프로필 사진이 제거되었습니다.';
+                document.body.appendChild(successMsg);
+                
+                setTimeout(() => {
+                    successMsg.remove();
+                }, 3000);
+            } catch (error) {
+                console.error('이미지 제거 오류:', error);
+                alert('이미지 제거 중 오류가 발생했습니다: ' + error.message);
+            }
+        }
+
+        // 페이지 로드 시 프로필 사진 불러오기
+        async function loadProfileImage() {
+            try {
+                const response = await fetch('<%= request.getContextPath() %>/api/profile/image', {
+                    credentials: 'same-origin'
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.imageUrl) {
+                        const profileImage = document.getElementById('profileImage');
+                        const placeholder = document.getElementById('profileImagePlaceholder');
+                        const removeBtn = document.getElementById('removeImageBtn');
+                        
+                        profileImage.src = result.imageUrl;
+                        profileImage.style.display = 'block';
+                        placeholder.style.display = 'none';
+                        removeBtn.classList.remove('hidden');
+                    }
+                }
+            } catch (error) {
+                console.error('프로필 사진 로드 오류:', error);
+            }
+        }
+
+        // 페이지 로드 시 실행
+        document.addEventListener('DOMContentLoaded', function() {
+            loadProfileImage();
+        });
     </script>
 </body>
 </html>

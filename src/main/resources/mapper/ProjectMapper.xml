@@ -61,5 +61,11 @@
         WHERE id = #{id} AND user_id = #{userId}
     </delete>
     
+    <!-- 사용자의 모든 프로젝트 삭제 -->
+    <delete id="deleteByUserId">
+        DELETE FROM projects 
+        WHERE user_id = #{userId}
+    </delete>
+    
 </mapper>
 

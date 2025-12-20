@@ -31,5 +31,9 @@ public class ProjectRepository {
     public int delete(int id, String userId) {
         return projectMapper.delete(id, userId);
     }
+    
+    public int deleteByUserId(String userId) {
+        return projectMapper.deleteByUserId(userId);
+    }
 }
 

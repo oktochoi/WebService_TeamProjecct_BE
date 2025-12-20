@@ -8,6 +8,7 @@ public class User {
     private String userPassword;
     private String email;
     private String userRole;
+    private String profileImageUrl;
     private Timestamp createdAt;
     private Timestamp updatedAt;
 
@@ -65,6 +66,14 @@ public class User {
 
     public void setUpdatedAt(Timestamp updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public String getProfileImageUrl() {
+        return profileImageUrl;
+    }
+
+    public void setProfileImageUrl(String profileImageUrl) {
+        this.profileImageUrl = profileImageUrl;
     }
 }
 

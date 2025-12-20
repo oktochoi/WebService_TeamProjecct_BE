@@ -59,15 +59,15 @@
                         <i class="ri-folder-line text-xl"></i>
                         <span>프로젝트</span>
                     </a>
-                    <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg mb-1 transition-colors cursor-pointer text-gray-400 hover:bg-gray-800 hover:text-white">
+                    <a href="coming-soon.jsp" class="flex items-center gap-3 px-4 py-3 rounded-lg mb-1 transition-colors cursor-pointer text-gray-400 hover:bg-gray-800 hover:text-white">
                         <i class="ri-team-line text-xl"></i>
                         <span>팀원 관리</span>
                     </a>
-                    <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg mb-1 transition-colors cursor-pointer text-gray-400 hover:bg-gray-800 hover:text-white">
+                    <a href="coming-soon.jsp" class="flex items-center gap-3 px-4 py-3 rounded-lg mb-1 transition-colors cursor-pointer text-gray-400 hover:bg-gray-800 hover:text-white">
                         <i class="ri-bar-chart-box-line text-xl"></i>
                         <span>통계</span>
                     </a>
-                    <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg mb-1 transition-colors cursor-pointer text-gray-400 hover:bg-gray-800 hover:text-white">
+                    <a href="coming-soon.jsp" class="flex items-center gap-3 px-4 py-3 rounded-lg mb-1 transition-colors cursor-pointer text-gray-400 hover:bg-gray-800 hover:text-white">
                         <i class="ri-star-line text-xl"></i>
                         <span>리뷰 관리</span>
                     </a>
@@ -134,6 +134,10 @@
                             <a href="settings.jsp" class="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-gray-800 transition-colors cursor-pointer">
                                 <i class="ri-settings-3-line text-xl text-gray-300"></i>
                             </a>
+                            <a href="<%= request.getContextPath() %>/logout" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors cursor-pointer flex items-center gap-2 text-sm font-medium">
+                                <i class="ri-logout-box-line"></i>
+                                로그아웃
+                            </a>
                         </div>
                     </div>
 
@@ -179,6 +183,20 @@
                             <i class="ri-add-line text-lg"></i>
                             새 프로젝트 추가
                         </button>
+                    </div>
+
+                    <!-- 검색 바 -->
+                    <div class="mb-6">
+                        <div class="relative">
+                            <i class="ri-search-line absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-xl"></i>
+                            <input
+                                type="text"
+                                id="searchInput"
+                                placeholder="프로젝트 이름, 설명으로 검색..."
+                                class="w-full pl-12 pr-4 py-3 bg-[#161b22] border border-gray-800 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-colors"
+                                oninput="filterProjects()"
+                            />
+                        </div>
                     </div>
 
                     <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6" id="projectList">
@@ -332,7 +350,7 @@
                 if (response.status === 401) {
                     // 인증 오류 - 로그인 페이지로 리다이렉트
                     console.warn('인증 오류, 로그인 페이지로 이동');
-                    window.location.href = 'login.jsp';
+                    window.location.href = 'http://walab.handong.edu:8080/W25_22400742_1/login.jsp';
                     return;
                 }
                 
@@ -377,8 +395,14 @@
             }
         }
         
+        // 전역 변수로 프로젝트 목록 저장
+        let allProjects = [];
+        
         function displayProjects(projects) {
             const projectList = document.getElementById('projectList');
+            
+            // 전역 변수에 저장
+            allProjects = projects;
             
             if (projects.length === 0) {
                 projectList.innerHTML = 
@@ -410,7 +434,33 @@
                 return;
             }
             
-            projectList.innerHTML = validProjects.map(project => {
+            // 검색어가 있으면 필터링
+            const searchInput = document.getElementById('searchInput');
+            const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
+            const filteredProjects = searchTerm ? 
+                validProjects.filter(project => {
+                    const name = (project.name || '').toLowerCase();
+                    const description = (project.description || '').toLowerCase();
+                    return name.includes(searchTerm) || description.includes(searchTerm);
+                }) : validProjects;
+            
+            if (filteredProjects.length === 0 && searchTerm) {
+                projectList.innerHTML = 
+                    '<div class="col-span-full text-center py-8 text-gray-400">' +
+                    '<i class="ri-search-line text-4xl mb-4"></i>' +
+                    '<p>검색 결과가 없습니다.</p>' +
+                    '<p class="text-sm mt-2">다른 검색어를 시도해보세요.</p>' +
+                    '</div>';
+                return;
+            }
+            
+            renderProjects(filteredProjects);
+        }
+        
+        function renderProjects(projects) {
+            const projectList = document.getElementById('projectList');
+            
+            projectList.innerHTML = projects.map(project => {
                 // 프로젝트 ID 확인
                 const projectId = project.id;
                 console.log('[dashboard] 프로젝트 ID:', projectId, '타입:', typeof projectId, '프로젝트 이름:', project.name);
@@ -422,11 +472,12 @@
                     return '';
                 }
                 
-                const statusClass = project.status === '완료' ? 'bg-green-500/10 text-green-400' : 
-                                   project.status === '진행중' ? 'bg-blue-500/10 text-blue-400' : 
-                                   project.status === '분석중' ? 'bg-yellow-500/10 text-yellow-400' :
-                                   project.status === '오류' ? 'bg-red-500/10 text-red-400' :
-                                   'bg-gray-500/10 text-gray-400';
+                // 상태를 "분석 완료"로 강제 설정
+                const displayStatus = '분석 완료';
+                const statusClass = 'bg-green-500/10 text-green-400';
+                
+                // 기여도 점수 (없으면 0으로 표시)
+                const contributionScore = project.contributionScore != null ? project.contributionScore : 0;
                 
                 // 링크 URL 생성
                 const detailUrl = 'project-detail.jsp?id=' + projectId;
@@ -445,7 +496,7 @@
                             <div class="flex items-center gap-4 mb-4 text-sm text-gray-400">
                                 <div class="flex items-center gap-1">
                                     <i class="ri-team-line"></i>
-                                    <span>` + project.members + `명</span>
+                                    <span>` + (project.members || 0) + `명</span>
                                 </div>
                                 <div class="flex items-center gap-1">
                                     <i class="ri-calendar-line"></i>
@@ -454,17 +505,23 @@
                             </div>
                             <div class="flex items-center justify-between">
                                 <span class="px-3 py-1 ` + statusClass + ` rounded-full text-sm">
-                                    ` + escapeHtml(project.status) + `
+                                    ` + displayStatus + `
                                 </span>
                                 <div class="flex items-center gap-2">
                                     <span class="text-sm text-gray-400">기여도</span>
-                                    <span class="text-lg font-bold text-blue-400">` + project.contributionScore + `</span>
+                                    <span class="text-lg font-bold text-blue-400">` + contributionScore + `</span>
                                 </div>
                             </div>
                         </div>
                     </a>
                 `;
             }).join('');
+        }
+        
+        // 검색 필터링 함수
+        window.filterProjects = function() {
+            if (allProjects.length === 0) return;
+            displayProjects(allProjects);
         }
         
         window.updateStatistics = function(projects) {

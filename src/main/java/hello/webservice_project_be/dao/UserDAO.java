@@ -91,6 +91,82 @@ public class UserDAO {
             return pstmt.executeUpdate() > 0;
         }
     }
+    
+    /**
+     * 모든 사용자 조회 (관리자용)
+     */
+    public java.util.List<User> getAllUsers() throws SQLException {
+        System.out.println("[UserDAO] getAllUsers 호출");
+        String sql = "SELECT * FROM users ORDER BY id DESC";
+        java.util.List<User> users = new java.util.ArrayList<>();
+        
+        try (Connection conn = ApplicationDataSource.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+            
+            while (rs.next()) {
+                users.add(mapRow(rs));
+            }
+        }
+        
+        System.out.println("[UserDAO] getAllUsers 결과: " + users.size() + "명");
+        return users;
+    }
+    
+    /**
+     * ID로 사용자 조회
+     */
+    public User getUserById(int id) throws SQLException {
+        return findById(id);
+    }
+    
+    /**
+     * 사용자 삭제 (관리자용)
+     */
+    public boolean deleteUser(int id) throws SQLException {
+        return delete(id);
+    }
+    
+    /**
+     * 프로필 이미지 URL 업데이트
+     */
+    public boolean updateProfileImageUrl(String username, String imageUrl) throws SQLException {
+        System.out.println("[UserDAO] updateProfileImageUrl 호출 - username=" + username + ", imageUrl=" + imageUrl);
+        String sql = "UPDATE users SET profile_image_url = ?, updated_at = NOW() WHERE username = ?";
+        
+        try (Connection conn = ApplicationDataSource.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
+            pstmt.setString(1, imageUrl);
+            pstmt.setString(2, username);
+            
+            boolean updated = pstmt.executeUpdate() > 0;
+            System.out.println("[UserDAO] updateProfileImageUrl 결과=" + updated);
+            return updated;
+        }
+    }
+    
+    /**
+     * 프로필 이미지 URL 조회
+     */
+    public String getProfileImageUrl(String username) throws SQLException {
+        System.out.println("[UserDAO] getProfileImageUrl 호출 - username=" + username);
+        String sql = "SELECT profile_image_url FROM users WHERE username = ?";
+        
+        try (Connection conn = ApplicationDataSource.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
+            pstmt.setString(1, username);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    String imageUrl = rs.getString("profile_image_url");
+                    System.out.println("[UserDAO] getProfileImageUrl 결과=" + imageUrl);
+                    return imageUrl;
+                }
+            }
+        }
+        return null;
+    }
 
     private User mapRow(ResultSet rs) throws SQLException {
         User user = new User();
@@ -99,6 +175,12 @@ public class UserDAO {
         user.setUserPassword(rs.getString("user_password"));
         user.setEmail(rs.getString("email"));
         user.setUserRole(rs.getString("user_role"));
+        try {
+            user.setProfileImageUrl(rs.getString("profile_image_url"));
+        } catch (SQLException e) {
+            // 컬럼이 없을 수 있으므로 무시
+            user.setProfileImageUrl(null);
+        }
         user.setCreatedAt(rs.getTimestamp("created_at"));
         user.setUpdatedAt(rs.getTimestamp("updated_at"));
         return user;

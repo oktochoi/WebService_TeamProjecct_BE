@@ -17,7 +17,7 @@ import java.sql.SQLException;
 import java.util.UUID;
 
 @Controller
-@RequestMapping("/github-auth")
+@RequestMapping("/github")
 public class GitHubAuthController {
     
     private final UserDAO userDAO = new UserDAO();
@@ -36,8 +36,9 @@ public class GitHubAuthController {
     private static final String GITHUB_CLIENT_ID = "Ov23lieOAWQRxryvvmaG"; // GitHub OAuth App Client ID
     private static final String GITHUB_CLIENT_SECRET = "e26f9d26385d2c46bc5ccb45fbb5de5cf4a8d599"; // ⚠️ Client Secret도 생성해서 입력하세요!
     private static final String GITHUB_REDIRECT_URI =
-            "http://localhost:8080/WebService_Project_BE_war_exploded/github-auth/callback";
+            "http://walab.handong.edu:8080/W25_22400742_1/github/callback";
     private static final String GITHUB_API_URL = "https://api.github.com/user";
+    private static final String LOGIN_PAGE_URL = "http://walab.handong.edu:8080/W25_22400742_1/login.jsp";
     
     /**
      * GitHub OAuth 인증 시작
@@ -97,19 +98,19 @@ public class GitHubAuthController {
             // 에러 처리
             if (error != null) {
                 System.err.println("[GitHubAuthController] GitHub OAuth 에러: " + error);
-                return "redirect:/login.jsp?error=" + error;
+                return "redirect:" + LOGIN_PAGE_URL + "?error=" + error;
             }
             
             // State 검증
             String savedState = (String) session.getAttribute("oauth_state");
             if (savedState == null || !savedState.equals(state)) {
                 System.err.println("[GitHubAuthController] State 불일치 - saved: " + savedState + ", received: " + state);
-                return "redirect:/login.jsp?error=invalid_state";
+                return "redirect:" + LOGIN_PAGE_URL + "?error=invalid_state";
             }
             
             if (code == null) {
                 System.err.println("[GitHubAuthController] Authorization code 없음");
-                return "redirect:/login.jsp?error=no_code";
+                return "redirect:" + LOGIN_PAGE_URL + "?error=no_code";
             }
             
             System.out.println("[GitHubAuthController] Access Token 요청 시작");
@@ -117,7 +118,7 @@ public class GitHubAuthController {
             String accessToken = getAccessToken(code);
             if (accessToken == null) {
                 System.err.println("[GitHubAuthController] Access Token 획득 실패");
-                return "redirect:/login.jsp?error=token_failed";
+                return "redirect:" + LOGIN_PAGE_URL + "?error=token_failed";
             }
             
             System.out.println("[GitHubAuthController] 사용자 정보 요청 시작");
@@ -130,12 +131,12 @@ public class GitHubAuthController {
                 return "redirect:/dashboard.jsp";
             } else {
                 System.err.println("[GitHubAuthController] 사용자 정보 획득 실패");
-                return "redirect:/login.jsp?error=auth_failed";
+                return "redirect:" + LOGIN_PAGE_URL + "?error=auth_failed";
             }
         } catch (Exception e) {
             System.err.println("[GitHubAuthController] 콜백 처리 오류: " + e.getMessage());
             e.printStackTrace();
-            return "redirect:/login.jsp?error=server_error";
+            return "redirect:" + LOGIN_PAGE_URL + "?error=server_error";
         }
     }
     
@@ -236,28 +237,50 @@ public class GitHubAuthController {
     }
 
     /**
-     * DB에 사용자 레코드가 없으면 생성
+     * DB에 사용자 레코드가 없으면 생성 (항상 실행)
      */
     private void persistUserIfAbsent(String username, String email) {
         if (username == null || username.isEmpty()) {
             System.err.println("[GitHubAuthController] persistUserIfAbsent - username 비어 있음, 저장 건너뜀");
             return;
         }
+        
         try {
             User existing = userDAO.findByUsername(username);
             if (existing == null) {
+                // 새 사용자 생성
                 User user = new User();
                 user.setUsername(username);
-                user.setUserPassword(UUID.randomUUID().toString()); // placeholder
+                // GitHub 로그인은 비밀번호가 없으므로 랜덤 UUID 사용
+                user.setUserPassword(UUID.randomUUID().toString());
+                // email이 비어있으면 username@github.com 형식으로 설정
+                if (email == null || email.isEmpty()) {
+                    email = username + "@github.com";
+                }
                 user.setEmail(email);
                 user.setUserRole("USER");
-                userDAO.create(user);
-                System.out.println("[GitHubAuthController] 새 사용자 생성: " + username);
+                
+                int userId = userDAO.create(user);
+                if (userId > 0) {
+                    System.out.println("[GitHubAuthController] 새 사용자 생성 성공 - username: " + username + ", id: " + userId);
+                } else {
+                    System.err.println("[GitHubAuthController] 새 사용자 생성 실패 - username: " + username);
+                }
             } else {
-                System.out.println("[GitHubAuthController] 기존 사용자 존재: " + username);
+                // 기존 사용자 정보 업데이트 (email이 변경되었을 수 있음)
+                if (email != null && !email.isEmpty() && !email.equals(existing.getEmail())) {
+                    System.out.println("[GitHubAuthController] 기존 사용자 존재 - username: " + username + ", id: " + existing.getId());
+                    // 필요시 email 업데이트 로직 추가 가능
+                } else {
+                    System.out.println("[GitHubAuthController] 기존 사용자 존재 - username: " + username + ", id: " + existing.getId());
+                }
             }
         } catch (SQLException e) {
             System.err.println("[GitHubAuthController] 사용자 저장 실패: " + e.getMessage());
+            e.printStackTrace();
+        } catch (Exception e) {
+            System.err.println("[GitHubAuthController] 사용자 저장 중 예상치 못한 오류: " + e.getMessage());
+            e.printStackTrace();
         }
     }
     

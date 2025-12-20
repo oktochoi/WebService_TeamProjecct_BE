@@ -9,6 +9,8 @@ import javax.servlet.http.*;
     "/settings.jsp", "/profile.jsp"})
 public class AuthFilter implements Filter {
     
+    private static final String LOGIN_PAGE_URL = "http://walab.handong.edu:8080/W25_22400742_1/login.jsp";
+    
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
     }
@@ -25,7 +27,7 @@ public class AuthFilter implements Filter {
             (Boolean) session.getAttribute("authenticated"));
         
         if (!isAuthenticated) {
-            httpResponse.sendRedirect("login.jsp");
+            httpResponse.sendRedirect(LOGIN_PAGE_URL);
             return;
         }
         

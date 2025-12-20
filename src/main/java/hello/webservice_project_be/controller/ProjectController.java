@@ -2,6 +2,7 @@ package hello.webservice_project_be.controller;
 
 import hello.webservice_project_be.model.Project;
 import hello.webservice_project_be.service.ProjectService;
+import hello.webservice_project_be.service.GitHubService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +20,9 @@ public class ProjectController {
     
     @Autowired
     private ProjectService projectService;
+    
+    @Autowired
+    private GitHubService githubService;
     
     @GetMapping
     @ResponseBody
@@ -82,13 +86,115 @@ public class ProjectController {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
             }
             
-            return ResponseEntity.ok(project);
+            // GitHub API에서 최신 데이터 가져오기
+            if (project.getRepoUrl() != null && !project.getRepoUrl().isEmpty()) {
+                try {
+                    Map<String, Object> githubStats = githubService.getDetailedRepositoryStats(project.getRepoUrl());
+                    
+                    // 커밋, PR, 이슈 수 업데이트
+                    if (githubStats.containsKey("totalCommits")) {
+                        project.setTotalCommits((Integer) githubStats.get("totalCommits"));
+                    }
+                    if (githubStats.containsKey("totalPullRequests")) {
+                        project.setTotalPullRequests((Integer) githubStats.get("totalPullRequests"));
+                    }
+                    if (githubStats.containsKey("totalIssues")) {
+                        project.setTotalIssues((Integer) githubStats.get("totalIssues"));
+                    }
+                    if (githubStats.containsKey("memberCount")) {
+                        project.setMembers((Integer) githubStats.get("memberCount"));
+                    }
+                    
+                    // 기여도 점수 계산 (간단한 알고리즘)
+                    int contributionScore = calculateContributionScore(githubStats);
+                    project.setContributionScore(contributionScore);
+                    
+                    // 기여자 정보 가져오기
+                    @SuppressWarnings("unchecked")
+                    List<Map<String, Object>> contributors = (List<Map<String, Object>>) githubStats.get("contributors");
+                    
+                    // 응답에 기여자 정보 포함
+                    Map<String, Object> response = new HashMap<>();
+                    response.put("id", project.getId());
+                    response.put("name", project.getName());
+                    response.put("description", project.getDescription());
+                    response.put("repoUrl", project.getRepoUrl());
+                    response.put("status", project.getStatus());
+                    response.put("members", project.getMembers());
+                    response.put("contributionScore", project.getContributionScore());
+                    response.put("totalCommits", project.getTotalCommits());
+                    response.put("totalPullRequests", project.getTotalPullRequests());
+                    response.put("totalIssues", project.getTotalIssues());
+                    response.put("userId", project.getUserId());
+                    response.put("createdAt", project.getCreatedAt());
+                    response.put("lastUpdated", project.getLastUpdated());
+                    response.put("contributors", contributors != null ? contributors : new java.util.ArrayList<>());
+                    
+                    return ResponseEntity.ok(response);
+                } catch (Exception e) {
+                    System.err.println("[ProjectController] GitHub API 호출 실패: " + e.getMessage());
+                    // GitHub API 호출 실패 시에도 기본 프로젝트 정보는 반환
+                    e.printStackTrace();
+                }
+            }
+            
+            // GitHub URL이 없거나 API 호출 실패 시 기본 프로젝트 정보 반환
+            Map<String, Object> response = new HashMap<>();
+            response.put("id", project.getId());
+            response.put("name", project.getName());
+            response.put("description", project.getDescription());
+            response.put("repoUrl", project.getRepoUrl());
+            response.put("status", project.getStatus());
+            response.put("members", project.getMembers());
+            response.put("contributionScore", project.getContributionScore());
+            response.put("totalCommits", project.getTotalCommits());
+            response.put("totalPullRequests", project.getTotalPullRequests());
+            response.put("totalIssues", project.getTotalIssues());
+            response.put("userId", project.getUserId());
+            response.put("createdAt", project.getCreatedAt());
+            response.put("lastUpdated", project.getLastUpdated());
+            response.put("contributors", new java.util.ArrayList<>());
+            
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
             e.printStackTrace();
             Map<String, String> error = new HashMap<>();
             error.put("error", "오류가 발생했습니다: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
         }
+    }
+    
+    /**
+     * 기여도 점수를 계산합니다.
+     */
+    private int calculateContributionScore(Map<String, Object> stats) {
+        int score = 0;
+        
+        // 커밋 수 기반 점수 (최대 40점)
+        Integer totalCommits = (Integer) stats.get("totalCommits");
+        if (totalCommits != null) {
+            score += Math.min(totalCommits / 10, 40);
+        }
+        
+        // Pull Requests 기반 점수 (최대 30점)
+        Integer totalPRs = (Integer) stats.get("totalPullRequests");
+        if (totalPRs != null) {
+            score += Math.min(totalPRs * 2, 30);
+        }
+        
+        // Issues 기반 점수 (최대 20점)
+        Integer totalIssues = (Integer) stats.get("totalIssues");
+        if (totalIssues != null) {
+            score += Math.min(totalIssues * 2, 20);
+        }
+        
+        // 팀원 수 기반 점수 (최대 10점)
+        Integer memberCount = (Integer) stats.get("memberCount");
+        if (memberCount != null && memberCount > 0) {
+            score += Math.min(memberCount * 2, 10);
+        }
+        
+        return Math.min(score, 100); // 최대 100점
     }
     
     @PostMapping

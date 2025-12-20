@@ -27,16 +27,16 @@ public class ProjectService {
     }
     
     public int createProject(Project project) {
-        // 프로젝트 생성 시 상태를 "분석중"으로 설정
+        // 프로젝트 생성 시 상태를 "진행중"으로 설정
         if (project.getStatus() == null || project.getStatus().isEmpty()) {
-            project.setStatus("분석중");
+            project.setStatus("진행중");
         }
         
         int projectId = projectRepository.insert(project);
         
-        // repo_url이 있으면 비동기로 분석 시작
+        // repo_url이 있으면 비동기로 GitHub 통계 업데이트
         if (projectId > 0 && project.getRepoUrl() != null && !project.getRepoUrl().isEmpty()) {
-            projectAnalysisService.analyzeProjectAsync(projectId, project.getRepoUrl());
+            projectAnalysisService.updateGitHubStatsAsync(projectId, project.getRepoUrl());
         }
         
         return projectId;
@@ -48,6 +48,12 @@ public class ProjectService {
     
     public boolean deleteProject(int id, String userId) {
         return projectRepository.delete(id, userId) > 0;
+    }
+    
+    public boolean deleteAllProjectsByUserId(String userId) {
+        int deletedCount = projectRepository.deleteByUserId(userId);
+        System.out.println("[ProjectService] 사용자의 모든 프로젝트 삭제: userId=" + userId + ", 삭제된 프로젝트 수=" + deletedCount);
+        return deletedCount >= 0; // 0개 이상 삭제되면 성공
     }
 }
 
