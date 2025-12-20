@@ -167,6 +167,26 @@ public class UserDAO {
         }
         return null;
     }
+    
+    /**
+     * 프로필 정보 업데이트 (이름, 이메일)
+     * 주의: DB에는 name 컬럼이 없으므로 세션만 업데이트
+     */
+    public boolean updateProfile(String username, String email) throws SQLException {
+        System.out.println("[UserDAO] updateProfile 호출 - username=" + username + ", email=" + email);
+        String sql = "UPDATE users SET email = ?, updated_at = NOW() WHERE username = ?";
+        
+        try (Connection conn = ApplicationDataSource.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
+            pstmt.setString(1, email);
+            pstmt.setString(2, username);
+            
+            boolean updated = pstmt.executeUpdate() > 0;
+            System.out.println("[UserDAO] updateProfile 결과=" + updated);
+            return updated;
+        }
+    }
 
     private User mapRow(ResultSet rs) throws SQLException {
         User user = new User();

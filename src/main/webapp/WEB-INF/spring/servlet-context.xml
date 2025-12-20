@@ -61,6 +61,7 @@
     
     <!-- Static Resources -->
     <mvc:resources mapping="/resources/**" location="/resources/"/>
+    <mvc:resources mapping="/uploads/**" location="/uploads/"/>
     
 </beans>
 

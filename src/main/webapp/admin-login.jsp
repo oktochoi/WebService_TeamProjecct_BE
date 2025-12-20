@@ -61,7 +61,7 @@
             </form>
 
             <div class="mt-6 text-center">
-                <a href="index.jsp" class="text-sm text-gray-400 hover:text-white transition-colors">
+                <a href="http://walab.handong.edu:8080/W25_22400742_1/index.jsp" class="text-sm text-gray-400 hover:text-white transition-colors">
                     <i class="ri-arrow-left-line"></i> 메인으로 돌아가기
                 </a>
             </div>

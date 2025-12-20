@@ -36,9 +36,9 @@ public class GitHubAuthController {
     private static final String GITHUB_CLIENT_ID = "Ov23lieOAWQRxryvvmaG"; // GitHub OAuth App Client ID
     private static final String GITHUB_CLIENT_SECRET = "e26f9d26385d2c46bc5ccb45fbb5de5cf4a8d599"; // ⚠️ Client Secret도 생성해서 입력하세요!
     private static final String GITHUB_REDIRECT_URI =
-            "http://walab.handong.edu:8080/W25_22400742_1/github/callback";
+            "http://walab.handong.edu:8080/W25_22400790_1/github/callback";
     private static final String GITHUB_API_URL = "https://api.github.com/user";
-    private static final String LOGIN_PAGE_URL = "http://walab.handong.edu:8080/W25_22400742_1/login.jsp";
+    private static final String LOGIN_PAGE_URL = "http://walab.handong.edu:8080/W25_22400790_1/login.jsp";
     
     /**
      * GitHub OAuth 인증 시작

@@ -125,7 +125,8 @@
                                         </label>
                                         <input
                                             type="text"
-                                            value="최옥토"
+                                            id="profileName"
+                                            value="<%= session != null && session.getAttribute("name") != null ? session.getAttribute("name") : (session != null && session.getAttribute("username") != null ? session.getAttribute("username") : "") %>"
                                             class="w-full px-4 py-2 bg-[#0d1117] border border-gray-700 rounded-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                         />
                                     </div>
@@ -135,185 +136,22 @@
                                         </label>
                                         <input
                                             type="email"
-                                            value="oktochoi@github.com"
+                                            id="profileEmail"
+                                            value="<%= session != null && session.getAttribute("email") != null ? session.getAttribute("email") : "" %>"
                                             class="w-full px-4 py-2 bg-[#0d1117] border border-gray-700 rounded-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                         />
                                     </div>
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-300 mb-2">
-                                            소개
-                                        </label>
-                                        <textarea
-                                            rows="4"
-                                            class="w-full px-4 py-2 bg-[#0d1117] border border-gray-700 rounded-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                                        >풀스택 개발자입니다.</textarea>
-                                    </div>
                                 </div>
                                 <div class="flex justify-end gap-3 mt-6">
-                                    <button class="px-4 py-2 text-gray-300 hover:bg-gray-800 rounded-lg transition-colors whitespace-nowrap cursor-pointer">
+                                    <button onclick="window.location.href='dashboard.jsp'" class="px-4 py-2 text-gray-300 hover:bg-gray-800 rounded-lg transition-colors whitespace-nowrap cursor-pointer">
                                         취소
                                     </button>
-                                    <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors whitespace-nowrap cursor-pointer">
+                                    <button onclick="saveProfile()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors whitespace-nowrap cursor-pointer">
                                         저장
                                     </button>
                                 </div>
                             </div>
 
-                            <div class="p-6 rounded-lg border border-gray-800 bg-[#161b22]">
-                                <h2 class="text-lg font-semibold text-white mb-6">내 활동</h2>
-                                
-                                <div class="grid grid-cols-2 gap-4 mb-6">
-                                    <div class="text-center p-4 rounded-lg bg-[#0d1117]">
-                                        <p class="text-2xl font-bold text-white">12</p>
-                                        <p class="text-sm text-gray-400">프로젝트</p>
-                                    </div>
-                                    <div class="text-center p-4 rounded-lg bg-[#0d1117]">
-                                        <p class="text-2xl font-bold text-white">34</p>
-                                        <p class="text-sm text-gray-400">받은 리뷰</p>
-                                    </div>
-                                </div>
-
-                                <div class="p-4 rounded-lg bg-yellow-900/20 border border-yellow-800">
-                                    <div class="flex items-center justify-center gap-2 mb-2">
-                                        <i class="ri-star-fill text-yellow-500 text-xl"></i>
-                                        <span class="text-2xl font-bold text-white">4.5</span>
-                                    </div>
-                                    <p class="text-sm text-center text-gray-400">평균 평점</p>
-                                </div>
-
-                                <div class="flex gap-2 mt-6 border-b border-gray-800">
-                                    <button
-                                        onclick="switchProfileSubTab('overview')"
-                                        id="profile-subtab-overview"
-                                        class="px-4 py-2 font-medium transition-colors border-b-2 border-blue-500 text-white whitespace-nowrap cursor-pointer"
-                                    >
-                                        개요
-                                    </button>
-                                    <button
-                                        onclick="switchProfileSubTab('reviews')"
-                                        id="profile-subtab-reviews"
-                                        class="px-4 py-2 font-medium transition-colors border-b-2 border-transparent text-gray-400 hover:text-white whitespace-nowrap cursor-pointer"
-                                    >
-                                        받은 리뷰
-                                    </button>
-                                    <button
-                                        onclick="switchProfileSubTab('projects')"
-                                        id="profile-subtab-projects"
-                                        class="px-4 py-2 font-medium transition-colors border-b-2 border-transparent text-gray-400 hover:text-white whitespace-nowrap cursor-pointer"
-                                    >
-                                        프로젝트 이력
-                                    </button>
-                                </div>
-
-                                <div class="mt-6">
-                                    <div id="profile-content-overview" class="profile-sub-content">
-                                        <div class="space-y-4">
-                                            <div class="grid grid-cols-2 gap-4">
-                                                <div class="p-4 rounded-lg border border-gray-800 bg-[#161b22]">
-                                                    <div class="flex items-center gap-3">
-                                                        <div class="w-10 h-10 flex items-center justify-center rounded-lg bg-blue-900/30">
-                                                            <i class="ri-git-commit-line text-xl text-blue-400"></i>
-                                                        </div>
-                                                        <div>
-                                                            <p class="text-xl font-bold text-white">1247</p>
-                                                            <p class="text-xs text-gray-400">총 커밋</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="p-4 rounded-lg border border-gray-800 bg-[#161b22]">
-                                                    <div class="flex items-center gap-3">
-                                                        <div class="w-10 h-10 flex items-center justify-center rounded-lg bg-purple-900/30">
-                                                            <i class="ri-git-pull-request-line text-xl text-purple-400"></i>
-                                                        </div>
-                                                        <div>
-                                                            <p class="text-xl font-bold text-white">156</p>
-                                                            <p class="text-xs text-gray-400">Pull Requests</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="p-4 rounded-lg border border-gray-800 bg-[#161b22]">
-                                                    <div class="flex items-center gap-3">
-                                                        <div class="w-10 h-10 flex items-center justify-center rounded-lg bg-green-900/30">
-                                                            <i class="ri-error-warning-line text-xl text-green-400"></i>
-                                                        </div>
-                                                        <div>
-                                                            <p class="text-xl font-bold text-white">89</p>
-                                                            <p class="text-xs text-gray-400">이슈 해결</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="p-4 rounded-lg border border-gray-800 bg-[#161b22]">
-                                                    <div class="flex items-center gap-3">
-                                                        <div class="w-10 h-10 flex items-center justify-center rounded-lg bg-orange-900/30">
-                                                            <i class="ri-chat-check-line text-xl text-orange-400"></i>
-                                                        </div>
-                                                        <div>
-                                                            <p class="text-xl font-bold text-white">234</p>
-                                                            <p class="text-xs text-gray-400">코드 리뷰</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div id="profile-content-reviews" class="profile-sub-content hidden">
-                                        <div class="space-y-4">
-                                            <div class="p-4 rounded-lg border border-gray-800 bg-[#161b22]">
-                                                <div class="flex items-start justify-between mb-3">
-                                                    <div class="flex items-center gap-3">
-                                                        <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
-                                                            DJ
-                                                        </div>
-                                                        <div>
-                                                            <h4 class="font-semibold text-white text-sm">devjohn</h4>
-                                                            <a href="project-detail.jsp?id=1" class="text-xs text-blue-400 hover:underline cursor-pointer">
-                                                                AI 챗봇 프로젝트
-                                                            </a>
-                                                        </div>
-                                                    </div>
-                                                    <div class="flex items-center gap-2">
-                                                        <div class="flex gap-1">
-                                                            <i class="text-sm ri-star-fill text-yellow-500"></i>
-                                                            <i class="text-sm ri-star-fill text-yellow-500"></i>
-                                                            <i class="text-sm ri-star-fill text-yellow-500"></i>
-                                                            <i class="text-sm ri-star-fill text-yellow-500"></i>
-                                                            <i class="text-sm ri-star-fill text-yellow-500"></i>
-                                                        </div>
-                                                        <span class="text-xs text-gray-400">2024-01-20</span>
-                                                    </div>
-                                                </div>
-                                                <p class="text-sm text-gray-300 leading-relaxed">프로젝트 리더십이 뛰어나고 코드 품질이 매우 높습니다. 팀원들과의 소통도 원활하게 잘 이루어졌습니다.</p>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div id="profile-content-projects" class="profile-sub-content hidden">
-                                        <div class="space-y-3">
-                                            <a href="project-detail.jsp?id=1" class="block p-4 rounded-lg border border-gray-800 bg-[#161b22] hover:border-gray-700 transition-colors cursor-pointer">
-                                                <div class="flex items-start justify-between mb-2">
-                                                    <div>
-                                                        <h4 class="font-semibold text-white text-sm mb-1">
-                                                            AI 챗봇 프로젝트
-                                                        </h4>
-                                                        <p class="text-xs text-gray-400">2024-01 ~ 진행중</p>
-                                                    </div>
-                                                    <span class="px-2 py-1 text-xs font-medium rounded-full whitespace-nowrap bg-green-900/30 text-green-400">
-                                                        완료
-                                                    </span>
-                                                </div>
-                                                <div class="flex items-center justify-between">
-                                                    <span class="text-xs text-gray-400">Owner</span>
-                                                    <div class="flex items-center gap-2">
-                                                        <span class="text-xs text-gray-400">기여도</span>
-                                                        <span class="text-sm font-bold text-white">95</span>
-                                                    </div>
-                                                </div>
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
                     </div>
 
@@ -430,7 +268,9 @@
                                             <i class="ri-github-fill text-3xl text-white"></i>
                                             <div>
                                                 <p class="font-medium text-white">GitHub</p>
-                                                <p class="text-sm text-gray-400">oktochoi@github.com</p>
+                                                <p class="text-sm text-gray-400">
+                                                    <%= session != null && session.getAttribute("email") != null ? session.getAttribute("email") : (session != null && session.getAttribute("username") != null ? session.getAttribute("username") + "@github.com" : "") %>
+                                                </p>
                                             </div>
                                         </div>
                                         <span class="px-3 py-1 text-sm bg-green-900/30 text-green-400 rounded-full whitespace-nowrap">
@@ -524,10 +364,18 @@
                 const removeBtn = document.getElementById('removeImageBtn');
                 
                 if (result.imageUrl) {
-                    profileImage.src = result.imageUrl;
-                    profileImage.style.display = 'block';
-                    placeholder.style.display = 'none';
-                    removeBtn.classList.remove('hidden');
+                    const imageUrl = '<%= request.getContextPath() %>' + result.imageUrl;
+                    profileImage.src = imageUrl;
+                    profileImage.onload = function() {
+                        profileImage.style.display = 'block';
+                        placeholder.style.display = 'none';
+                        removeBtn.classList.remove('hidden');
+                    };
+                    profileImage.onerror = function() {
+                        console.error('이미지 로드 실패:', imageUrl);
+                        profileImage.style.display = 'none';
+                        placeholder.style.display = 'flex';
+                    };
                 }
 
                 // 성공 메시지
@@ -586,6 +434,33 @@
         // 페이지 로드 시 프로필 사진 불러오기
         async function loadProfileImage() {
             try {
+                // 먼저 세션에서 확인
+                <% 
+                    String sessionImageUrl = null;
+                    if (session != null) {
+                        sessionImageUrl = (String) session.getAttribute("profileImageUrl");
+                    }
+                %>
+                <% if (sessionImageUrl != null) { %>
+                    const sessionImageUrl = '<%= sessionImageUrl %>';
+                    const profileImage = document.getElementById('profileImage');
+                    const placeholder = document.getElementById('profileImagePlaceholder');
+                    const removeBtn = document.getElementById('removeImageBtn');
+                    
+                    profileImage.src = '<%= request.getContextPath() %>' + sessionImageUrl;
+                    profileImage.onload = function() {
+                        profileImage.style.display = 'block';
+                        placeholder.style.display = 'none';
+                        removeBtn.classList.remove('hidden');
+                    };
+                    profileImage.onerror = function() {
+                        profileImage.style.display = 'none';
+                        placeholder.style.display = 'flex';
+                        removeBtn.classList.add('hidden');
+                    };
+                <% } %>
+                
+                // API에서 최신 정보 가져오기
                 const response = await fetch('<%= request.getContextPath() %>/api/profile/image', {
                     credentials: 'same-origin'
                 });
@@ -597,14 +472,67 @@
                         const placeholder = document.getElementById('profileImagePlaceholder');
                         const removeBtn = document.getElementById('removeImageBtn');
                         
-                        profileImage.src = result.imageUrl;
-                        profileImage.style.display = 'block';
-                        placeholder.style.display = 'none';
-                        removeBtn.classList.remove('hidden');
+                        const imageUrl = '<%= request.getContextPath() %>' + result.imageUrl;
+                        profileImage.src = imageUrl;
+                        profileImage.onload = function() {
+                            profileImage.style.display = 'block';
+                            placeholder.style.display = 'none';
+                            removeBtn.classList.remove('hidden');
+                        };
+                        profileImage.onerror = function() {
+                            profileImage.style.display = 'none';
+                            placeholder.style.display = 'flex';
+                            removeBtn.classList.add('hidden');
+                        };
                     }
                 }
             } catch (error) {
                 console.error('프로필 사진 로드 오류:', error);
+            }
+        }
+
+        // 프로필 저장
+        async function saveProfile() {
+            const name = document.getElementById('profileName').value;
+            const email = document.getElementById('profileEmail').value;
+            
+            if (!name || !email) {
+                alert('이름과 이메일을 모두 입력해주세요.');
+                return;
+            }
+            
+            try {
+                const formData = new FormData();
+                formData.append('name', name);
+                formData.append('email', email);
+                
+                const response = await fetch('<%= request.getContextPath() %>/api/profile/save', {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'same-origin'
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || '프로필 저장에 실패했습니다.');
+                }
+                
+                const result = await response.json();
+                
+                // 성공 메시지
+                const successMsg = document.createElement('div');
+                successMsg.className = 'fixed top-4 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+                successMsg.innerHTML = '<i class="ri-check-line"></i> 프로필이 저장되었습니다.';
+                document.body.appendChild(successMsg);
+                
+                setTimeout(() => {
+                    successMsg.remove();
+                    // 대시보드로 이동
+                    window.location.href = 'dashboard.jsp';
+                }, 1000);
+            } catch (error) {
+                console.error('프로필 저장 오류:', error);
+                alert('프로필 저장 중 오류가 발생했습니다: ' + error.message);
             }
         }
 

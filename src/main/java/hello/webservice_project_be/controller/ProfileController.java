@@ -7,6 +7,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -22,23 +23,16 @@ import java.util.UUID;
 @RequestMapping("/api/profile")
 public class ProfileController {
     
-    // 이미지 저장 디렉토리 (프로젝트 루트의 uploads/profile 디렉토리)
+    // 이미지 저장 디렉토리 (웹앱 루트의 uploads/profile 디렉토리)
     private static final String UPLOAD_DIR = "uploads/profile";
     
     private final UserDAO userDAO;
     
+    @org.springframework.beans.factory.annotation.Autowired
+    private ServletContext servletContext;
+    
     public ProfileController() {
         this.userDAO = new UserDAO();
-        // 업로드 디렉토리 생성
-        try {
-            Path uploadPath = Paths.get(UPLOAD_DIR);
-            if (!Files.exists(uploadPath)) {
-                Files.createDirectories(uploadPath);
-                System.out.println("[ProfileController] 업로드 디렉토리 생성: " + uploadPath.toAbsolutePath());
-            }
-        } catch (IOException e) {
-            System.err.println("[ProfileController] 업로드 디렉토리 생성 실패: " + e.getMessage());
-        }
     }
     
     /**
@@ -88,16 +82,25 @@ public class ProfileController {
                 extension = originalFilename.substring(originalFilename.lastIndexOf("."));
             }
             
+            // 기존 파일 삭제 (같은 사용자의 이전 프로필 이미지) - 새 파일 저장 전에 삭제
+            deleteOldProfileImage(username);
+            
             // 고유한 파일명 생성 (username_timestamp_uuid.extension)
             String uniqueFilename = username + "_" + System.currentTimeMillis() + "_" + UUID.randomUUID().toString() + extension;
             
-            // 파일 저장
-            Path uploadPath = Paths.get(UPLOAD_DIR);
+            // 웹앱 루트 기준으로 파일 저장 경로 설정
+            String realPath = servletContext.getRealPath("/");
+            if (realPath == null) {
+                // 개발 환경에서는 프로젝트 루트 사용
+                realPath = System.getProperty("user.dir");
+            }
+            Path uploadPath = Paths.get(realPath, UPLOAD_DIR);
+            if (!Files.exists(uploadPath)) {
+                Files.createDirectories(uploadPath);
+                System.out.println("[ProfileController] 업로드 디렉토리 생성: " + uploadPath.toAbsolutePath());
+            }
             Path filePath = uploadPath.resolve(uniqueFilename);
             Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-            
-            // 기존 파일 삭제 (같은 사용자의 이전 프로필 이미지)
-            deleteOldProfileImage(username);
             
             // 이미지 URL 생성 (상대 경로)
             String imageUrl = "/" + UPLOAD_DIR + "/" + uniqueFilename;
@@ -122,6 +125,12 @@ public class ProfileController {
             System.out.println("[ProfileController] 프로필 이미지 업로드 성공: " + imageUrl);
             return ResponseEntity.ok(response);
             
+        } catch (IOException e) {
+            System.err.println("[ProfileController] 이미지 업로드 IO 오류: " + e.getMessage());
+            e.printStackTrace();
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "파일 저장 중 오류가 발생했습니다: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
         } catch (Exception e) {
             System.err.println("[ProfileController] 이미지 업로드 오류: " + e.getMessage());
             e.printStackTrace();
@@ -129,6 +138,10 @@ public class ProfileController {
             String errorMessage = e.getMessage();
             if (errorMessage == null || errorMessage.isEmpty()) {
                 errorMessage = "알 수 없는 오류가 발생했습니다.";
+            }
+            // 파일 경로가 포함된 에러 메시지에서 경로 제거
+            if (errorMessage.contains("uploads/")) {
+                errorMessage = "파일 처리 중 오류가 발생했습니다.";
             }
             error.put("error", "이미지 업로드 중 오류가 발생했습니다: " + errorMessage);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
@@ -167,7 +180,11 @@ public class ProfileController {
             if (imageUrl != null) {
                 // 파일이 실제로 존재하는지 확인
                 String filename = imageUrl.substring(imageUrl.lastIndexOf("/") + 1);
-                Path filePath = Paths.get(UPLOAD_DIR, filename);
+                String realPath = servletContext.getRealPath("/");
+                if (realPath == null) {
+                    realPath = System.getProperty("user.dir");
+                }
+                Path filePath = Paths.get(realPath, UPLOAD_DIR, filename);
                 if (Files.exists(filePath)) {
                     response.put("imageUrl", imageUrl);
                 } else {
@@ -236,11 +253,64 @@ public class ProfileController {
     }
     
     /**
+     * 프로필 정보 저장 (이름, 이메일)
+     */
+    @PostMapping("/save")
+    @ResponseBody
+    public ResponseEntity<?> saveProfile(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String email,
+            HttpSession session) {
+        
+        try {
+            String username = (String) session.getAttribute("username");
+            if (username == null) {
+                Map<String, String> error = new HashMap<>();
+                error.put("error", "인증이 필요합니다.");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+            }
+            
+            // 이메일 업데이트 (DB에 저장)
+            if (email != null && !email.isEmpty()) {
+                try {
+                    userDAO.updateProfile(username, email);
+                    session.setAttribute("email", email);
+                } catch (SQLException e) {
+                    System.err.println("[ProfileController] DB 업데이트 오류: " + e.getMessage());
+                }
+            }
+            
+            // 이름은 세션에만 저장 (DB에 name 컬럼이 없음)
+            if (name != null && !name.isEmpty()) {
+                session.setAttribute("name", name);
+            }
+            
+            Map<String, String> response = new HashMap<>();
+            response.put("success", "true");
+            response.put("message", "프로필이 저장되었습니다.");
+            
+            System.out.println("[ProfileController] 프로필 저장 성공");
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            System.err.println("[ProfileController] 프로필 저장 오류: " + e.getMessage());
+            e.printStackTrace();
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "프로필 저장 중 오류가 발생했습니다: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+        }
+    }
+    
+    /**
      * 사용자의 기존 프로필 이미지 삭제
      */
     private void deleteOldProfileImage(String username) {
         try {
-            Path uploadPath = Paths.get(UPLOAD_DIR);
+            String realPath = servletContext.getRealPath("/");
+            if (realPath == null) {
+                realPath = System.getProperty("user.dir");
+            }
+            Path uploadPath = Paths.get(realPath, UPLOAD_DIR);
             if (Files.exists(uploadPath)) {
                 Files.list(uploadPath)
                     .filter(path -> {
