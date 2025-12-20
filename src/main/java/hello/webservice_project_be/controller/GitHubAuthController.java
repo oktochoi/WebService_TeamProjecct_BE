@@ -21,7 +21,6 @@ import java.util.UUID;
 public class GitHubAuthController {
     
     private final UserDAO userDAO = new UserDAO();
-    
     // Controller 초기화 확인
     public GitHubAuthController() {
         System.out.println("========================================");
