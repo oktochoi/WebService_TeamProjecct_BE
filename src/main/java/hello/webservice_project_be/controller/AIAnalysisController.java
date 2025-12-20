@@ -17,8 +17,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @Controller
 @RequestMapping("/api/ai-analysis")
 public class AIAnalysisController {
-    
-    
+
     @PostMapping
     @ResponseBody
     public ResponseEntity<?> analyze(@RequestBody Map<String, String> request, HttpSession session) {
