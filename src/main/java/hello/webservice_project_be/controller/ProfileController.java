@@ -22,7 +22,6 @@ import java.util.UUID;
 @Controller
 @RequestMapping("/api/profile")
 public class ProfileController {
-    
     // 이미지 저장 디렉토리 (웹앱 루트의 uploads/profile 디렉토리)
     private static final String UPLOAD_DIR = "uploads/profile";
     
