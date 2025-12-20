@@ -10,7 +10,6 @@ import javax.servlet.http.HttpSession;
 @Controller
 @RequestMapping("/logout")
 public class LogoutController {
-    
     private static final String LOGIN_PAGE_URL = "http://walab.handong.edu:8080/W25_22400742_1/login.jsp";
     
     @GetMapping
